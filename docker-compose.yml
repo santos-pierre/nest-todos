@@ -1,0 +1,37 @@
+# Use postgres/example user/password credentials
+version: '3.8'
+
+services:
+  # BACK
+  api:
+    build:
+      context: .docker/dev
+      dockerfile: Dockerfile
+    env_file:
+      - .docker/dev/.env-back
+    ports:
+      - 8080:8080
+    volumes:
+      - .:/api
+    networks:
+      - app_network
+  # DB
+  db:
+    image: 'postgres:latest'
+    environment:
+      POSTGRES_PASSWORD: example
+      POSTGRES_DB: todos
+    ports:
+      - 5432:5432
+    networks:
+      - app_network
+    restart: unless-stopped
+    healthcheck:
+      test: ['CMD', 'pg_isready -U postgres']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+networks:
+  app_network:
+    driver: bridge
